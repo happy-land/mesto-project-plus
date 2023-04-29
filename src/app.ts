@@ -16,7 +16,7 @@ app.use(express.json());
 app.use((req: Request, res:Response, next: NextFunction) => {
   const reqCustom = req as RequestCustom;
   reqCustom.user = {
-    _id: '644ceaeea7bbdebd1d185820' // вставьте сюда _id созданного в предыдущем пункте пользователя
+    _id: '644ceaeea7bbdebd1d185820'
   };
 
   next();
@@ -26,5 +26,4 @@ app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 
 app.listen(PORT, () => {
-  console.log('Ссылка на сервер: ', PORT);
 });
