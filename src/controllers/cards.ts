@@ -21,3 +21,15 @@ export const deleteCard = (req: Request, res: Response) => {
     .then(card => res.send({ data: card }))
     .catch(err => res.status(500).send({ message: err.message }))
 }
+
+export const likeCard = (req: RequestCustom, res: Response) => card.findByIdAndUpdate(
+  req.params.cardId,
+  { $addToSet: { likes: req.user?._id } }, // добавить _id в массив, если его там нет
+  { new: true },
+)
+
+export const dislikeCard = (req: RequestCustom, res: Response) => card.findByIdAndUpdate(
+  req.params.cardId,
+  { $pull: { likes: req.user?._id } }, // убрать _id из массива
+  { new: true },
+)

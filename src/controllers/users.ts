@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { RequestCustom } from "types"; // временное решение
 
 import user from "../models/user";
 
@@ -21,3 +22,34 @@ export const createUser = (req: Request, res: Response) => {
     .then(user => res.send({ data: user }))
     .catch(err => res.status(500).send({ message: err.message }))
 }
+
+export const updateUser = (req: RequestCustom, res: Response) => {
+  const { name } = req.body;
+  return user.findByIdAndUpdate(
+    req.user?._id,
+    { name: name},
+    {
+      new: true,
+      runValidators: true,
+      upsert: true
+    }
+  )
+    .then(user => res.send({ data: user }))
+    .catch(err => res.status(500).send({ message: err.message }))
+}
+
+export const updateAvatar = (req: RequestCustom, res: Response) => {
+  const { avatar } = req.body;
+  return user.findByIdAndUpdate(
+    req.user?._id,
+    { avatar: avatar},
+    {
+      new: true,
+      runValidators: true,
+      upsert: true
+    }
+  )
+    .then(user => res.send({ data: user }))
+    .catch(err => res.status(500).send({ message: err.message }))
+}
+
