@@ -1,6 +1,7 @@
 import express, { NextFunction, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import usersRouter from './routes/users';
+import cardsRouter from './routes/cards';
 import user from "./models/user";
 import { RequestCustom } from 'types';
 
@@ -22,6 +23,7 @@ app.use((req: Request, res:Response, next: NextFunction) => {
 });
 
 app.use('/users', usersRouter);
+app.use('/cards', cardsRouter);
 
 app.listen(PORT, () => {
   console.log('Ссылка на сервер: ', PORT);
