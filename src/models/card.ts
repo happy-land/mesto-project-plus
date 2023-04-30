@@ -1,4 +1,4 @@
-import mongoose, { ObjectId, Schema } from "mongoose";
+import mongoose, { Schema } from 'mongoose';
 
 export interface ICard {
   name: string;
@@ -13,26 +13,28 @@ const cardSchema = new Schema<ICard>({
     type: String,
     minlength: 2,
     maxlength: 30,
-    required: true
+    required: true,
   },
   link: {
     type: String,
-    required: true
+    required: true,
   },
   owner: {
     type: Schema.Types.ObjectId,
     ref: 'user',
-    required: true
+    required: true,
   },
-  likes: [{
-    type: Schema.Types.ObjectId,
-    default: []
-  }],
+  likes: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'user',
+      default: [],
+    },
+  ],
   createdAt: {
     type: Date,
-    default: Date.now()
-  }
+    default: Date.now,
+  },
 });
-
 
 export default mongoose.model<ICard>('card', cardSchema);

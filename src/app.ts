@@ -2,7 +2,7 @@ import express, { NextFunction, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import usersRouter from './routes/users';
 import cardsRouter from './routes/cards';
-import user from "./models/user";
+import user from './models/user';
 import { RequestCustom } from 'types';
 
 const { PORT = 3000, BASE_PATH } = process.env;
@@ -13,10 +13,10 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-app.use((req: Request, res:Response, next: NextFunction) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   const reqCustom = req as RequestCustom;
   reqCustom.user = {
-    _id: '644ceaeea7bbdebd1d185820'
+    _id: '644ceaeea7bbdebd1d185820',
   };
 
   next();
@@ -25,5 +25,8 @@ app.use((req: Request, res:Response, next: NextFunction) => {
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 
-app.listen(PORT, () => {
+app.use((_, res) => {
+  res.status(404).send({ message: 'Ошибка 404' })
 });
+
+app.listen(PORT, () => {});
