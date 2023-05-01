@@ -1,38 +1,38 @@
 /* eslint-disable no-shadow */
 /* eslint-disable consistent-return */
-/* eslint-disable no-underscore-dangle */
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { RequestCustom } from '../types'; // временное решение
 
 import user from '../models/user';
+import { ERROR_CODE_DEFAULT, ERROR_CODE_INVALID_DATA, ERROR_CODE_NOT_FOUND } from '../utils/constants';
 
 export const getUsers = (req: Request, res: Response) => user
   .find({})
   .then((users) => res.send({ data: users }))
   .catch((err) => res.status(500).send({ message: err.message }));
 
-export const getUserById = (req: Request, res: Response, next: NextFunction) => {
+export const getUserById = (req: Request, res: Response) => {
   const { userId } = req.params;
   return user
     .findById(userId)
     // eslint-disable-next-line no-shadow
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error('Пользователь не найден'));
+        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Пользователь не найден' });
+        return;
       }
       res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(err);
+        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Пользователь не найден' });
       } else {
-        next(err);
+        res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
       }
-      res.status(500).send({ message: err.message });
     });
 };
 
-export const createUser = (req: Request, res: Response, next: NextFunction) => {
+export const createUser = (req: Request, res: Response) => {
   const { name, about, avatar } = req.body;
   return user
     .create({ name, about, avatar })
@@ -40,17 +40,11 @@ export const createUser = (req: Request, res: Response, next: NextFunction) => {
       res.send({ data: user });
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        next(err);
-      } else {
-        next(err);
-      }
       if (err.name === 'ValidationError') {
-        next(err);
+        res.status(ERROR_CODE_INVALID_DATA).send({ message: 'Переданы некорректные данные при создании пользователя' });
       } else {
-        next(err);
+        res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
       }
-      res.status(500).send({ message: err.message });
     });
 };
 
@@ -70,11 +64,22 @@ export const updateUser = (req: RequestCustom, res: Response) => {
     )
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error('Пользователь не найден'));
+        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Пользователь не найден' });
+        return;
       }
       res.send({ data: user });
     })
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(ERROR_CODE_INVALID_DATA).send({ message: 'Переданы некорректные данные при обновлении пользователя' });
+        return;
+      }
+      if (err.name === 'CastError') {
+        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Пользователь не найден' });
+        return;
+      }
+      res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
+    });
 };
 
 export const updateAvatar = (req: RequestCustom, res: Response) => {
@@ -90,9 +95,20 @@ export const updateAvatar = (req: RequestCustom, res: Response) => {
     )
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error('Пользователь не найден'));
+        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Пользователь не найден' });
+        return;
       }
       res.send({ data: user });
     })
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(ERROR_CODE_INVALID_DATA).send({ message: 'Переданы некорректные данные при обновлении аватара' });
+        return;
+      }
+      if (err.name === 'CastError') {
+        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Пользователь не найден' });
+        return;
+      }
+      res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
+    });
 };

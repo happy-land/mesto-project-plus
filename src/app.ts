@@ -2,10 +2,10 @@ import express, { NextFunction, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import usersRouter from './routes/users';
 import cardsRouter from './routes/cards';
-import user from './models/user';
-import { RequestCustom } from 'types';
+import { RequestCustom } from './types';
+import { ERROR_CODE_NOT_FOUND } from './utils/constants';
 
-const { PORT = 3000, BASE_PATH } = process.env;
+const { PORT = 3000 } = process.env;
 const app = express();
 
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
@@ -26,7 +26,7 @@ app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 
 app.use((_, res) => {
-  res.status(404).send({ message: 'Ошибка 404' })
+  res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Страница не найдена' });
 });
 
 app.listen(PORT, () => {});

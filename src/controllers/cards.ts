@@ -1,42 +1,43 @@
 /* eslint-disable consistent-return */
 /* eslint-disable no-shadow */
-/* eslint-disable no-underscore-dangle */
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { RequestCustom } from '../types'; // временное решение
 import card from '../models/card';
+import { ERROR_CODE_DEFAULT, ERROR_CODE_INVALID_DATA, ERROR_CODE_NOT_FOUND } from '../utils/constants';
 
 export const getCards = (req: Request, res: Response) => card
   .find({})
   .then((cards) => res.send({ data: cards }))
-  .catch((err) => res.status(500).send({ message: err.message }));
+  .catch((err) => res.status(ERROR_CODE_DEFAULT).send({ message: err.message }));
 
-export const createCard = (req: RequestCustom, res: Response, next: NextFunction) => {
+export const createCard = (req: RequestCustom, res: Response) => {
   const { name, link } = req.body;
   return card
     .create({ name, link, owner: req.user?._id })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(err);
+        res.status(ERROR_CODE_INVALID_DATA).send({ message: 'Переданы некорректные данные при создании карточки' });
       } else {
-        next(err);
+        res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
       }
     });
 };
 
-export const deleteCard = (req: Request, res: Response, next: NextFunction) => card
+export const deleteCard = (req: Request, res: Response) => card
   .findByIdAndDelete(req.params.cardId)
   .then((card) => {
     if (!card) {
-      return Promise.reject(new Error('Карточка не найдена'));
+      res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка не найдена' });
+      return;
     }
     res.send({ data: card });
   })
   .catch((err) => {
     if (err.name === 'CastError') {
-      next(err);
+      res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка не найдена' });
     } else {
-      next(err);
+      res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
     }
   });
 
@@ -48,11 +49,18 @@ export const likeCard = (req: RequestCustom, res: Response) => card
   )
   .then((card) => {
     if (!card) {
-      return Promise.reject(new Error('Карточка не найдена'));
+      res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка не найдена' });
+      return;
     }
     res.send({ data: card });
   })
-  .catch((err) => res.status(500).send({ message: err.message }));
+  .catch((err) => {
+    if (err.name === 'CastError') {
+      res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка не найдена' });
+    } else {
+      res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
+    }
+  });
 
 export const dislikeCard = (req: RequestCustom, res: Response) => card
   .findByIdAndUpdate(
@@ -62,8 +70,15 @@ export const dislikeCard = (req: RequestCustom, res: Response) => card
   )
   .then((card) => {
     if (!card) {
-      return Promise.reject(new Error('Карточка не найдена'));
+      res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка не найдена' });
+      return;
     }
     res.send({ data: card });
   })
-  .catch((err) => res.status(500).send({ message: err.message }));
+  .catch((err) => {
+    if (err.name === 'CastError') {
+      res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка не найдена' });
+    } else {
+      res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
+    }
+  });
