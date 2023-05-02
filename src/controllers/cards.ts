@@ -35,7 +35,7 @@ export const deleteCard = (req: Request, res: Response) => card
   })
   .catch((err) => {
     if (err.name === 'CastError') {
-      res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка не найдена' });
+      res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена.' });
     } else {
       res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
     }
@@ -56,7 +56,7 @@ export const likeCard = (req: RequestCustom, res: Response) => card
   })
   .catch((err) => {
     if (err.name === 'CastError') {
-      res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка не найдена' });
+      res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена.' });
     } else {
       res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
     }
@@ -77,7 +77,7 @@ export const dislikeCard = (req: RequestCustom, res: Response) => card
   })
   .catch((err) => {
     if (err.name === 'CastError') {
-      res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка не найдена' });
+      res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена.' });
     } else {
       res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
     }

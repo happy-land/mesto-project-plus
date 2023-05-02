@@ -25,7 +25,7 @@ export const getUserById = (req: Request, res: Response) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Пользователь не найден' });
+        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден.' });
       } else {
         res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
       }
@@ -75,7 +75,7 @@ export const updateUser = (req: RequestCustom, res: Response) => {
         return;
       }
       if (err.name === 'CastError') {
-        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Пользователь не найден' });
+        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден.' });
         return;
       }
       res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
@@ -106,7 +106,7 @@ export const updateAvatar = (req: RequestCustom, res: Response) => {
         return;
       }
       if (err.name === 'CastError') {
-        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Пользователь не найден' });
+        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден.' });
         return;
       }
       res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
