@@ -4,6 +4,7 @@ import usersRouter from './routes/users';
 import cardsRouter from './routes/cards';
 import { RequestCustom } from './types';
 import { ERROR_CODE_NOT_FOUND } from './utils/constants';
+import errorsHandler from './middlewares/errors';
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -28,5 +29,7 @@ app.use('/cards', cardsRouter);
 app.use((_, res) => {
   res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Страница не найдена' });
 });
+
+app.use(errorsHandler);
 
 app.listen(PORT, () => {});
