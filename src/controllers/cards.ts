@@ -17,6 +17,7 @@ export const createCard = (req: RequestCustom, res: Response) => {
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
+
         res.status(ERROR_CODE_INVALID_DATA).send({ message: 'Переданы некорректные данные при создании карточки' });
       } else {
         res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
