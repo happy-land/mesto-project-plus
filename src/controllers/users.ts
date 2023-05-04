@@ -1,38 +1,37 @@
 /* eslint-disable no-shadow */
 /* eslint-disable consistent-return */
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { RequestCustom } from '../types'; // временное решение
-
 import user from '../models/user';
-import { ERROR_CODE_DEFAULT, ERROR_CODE_INVALID_DATA, ERROR_CODE_NOT_FOUND } from '../utils/constants';
+import NotFoundError from '../errors/not-found-err';
+import InvalidDataError from '../errors/invalid-data-err';
 
-export const getUsers = (req: Request, res: Response) => user
+export const getUsers = (req: Request, res: Response, next: NextFunction) => user
   .find({})
   .then((users) => res.send({ data: users }))
-  .catch((err) => res.status(500).send({ message: err.message }));
+  .catch((err) => next(err));
 
-export const getUserById = (req: Request, res: Response) => {
+export const getUserById = (req: Request, res: Response, next: NextFunction) => {
   const { userId } = req.params;
   return user
     .findById(userId)
     // eslint-disable-next-line no-shadow
     .then((user) => {
       if (!user) {
-        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден.' });
-        return;
+        throw new NotFoundError('Пользователь по указанному _id не найден.');
       }
       res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_CODE_INVALID_DATA).send({ message: '_id пользователя невалиден' });
+        next(new InvalidDataError('_id пользователя невалиден'));
       } else {
-        res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
+        next(err);
       }
     });
 };
 
-export const createUser = (req: Request, res: Response) => {
+export const createUser = (req: Request, res: Response, next: NextFunction) => {
   const { name, about, avatar } = req.body;
   return user
     .create({ name, about, avatar })
@@ -41,14 +40,14 @@ export const createUser = (req: Request, res: Response) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR_CODE_INVALID_DATA).send({ message: 'Переданы некорректные данные при создании пользователя' });
+        next(new InvalidDataError('Переданы некорректные данные при создании пользователя'));
       } else {
-        res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
+        next(err);
       }
     });
 };
 
-export const updateUser = (req: RequestCustom, res: Response) => {
+export const updateUser = (req: RequestCustom, res: Response, next: NextFunction) => {
   const { name, about } = req.body;
   return user
     .findByIdAndUpdate(
@@ -64,25 +63,22 @@ export const updateUser = (req: RequestCustom, res: Response) => {
     )
     .then((user) => {
       if (!user) {
-        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Пользователь не найден' });
-        return;
+        throw new NotFoundError('Пользователь по указанному _id не найден.');
       }
       res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR_CODE_INVALID_DATA).send({ message: 'Переданы некорректные данные при обновлении пользователя' });
-        return;
+        next(new InvalidDataError('Переданы некорректные данные при обновлении пользователя'));
       }
       if (err.name === 'CastError') {
-        res.status(ERROR_CODE_INVALID_DATA).send({ message: '_id пользователя невалиден' });
-        return;
+        next(new InvalidDataError('_id пользователя невалиден'));
       }
-      res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
+      next(err);
     });
 };
 
-export const updateAvatar = (req: RequestCustom, res: Response) => {
+export const updateAvatar = (req: RequestCustom, res: Response, next: NextFunction) => {
   const { avatar } = req.body;
   return user
     .findByIdAndUpdate(
@@ -95,20 +91,17 @@ export const updateAvatar = (req: RequestCustom, res: Response) => {
     )
     .then((user) => {
       if (!user) {
-        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Пользователь не найден' });
-        return;
+        throw new NotFoundError('Пользователь по указанному _id не найден.');
       }
       res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR_CODE_INVALID_DATA).send({ message: 'Переданы некорректные данные при обновлении аватара' });
-        return;
+        next(new InvalidDataError('Переданы некорректные данные при обновлении пользователя'));
       }
       if (err.name === 'CastError') {
-        res.status(ERROR_CODE_INVALID_DATA).send({ message: '_id пользователя невалиден' });
-        return;
+        next(new InvalidDataError('_id пользователя невалиден'));
       }
-      res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
+      next(err);
     });
 };

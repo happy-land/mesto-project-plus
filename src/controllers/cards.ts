@@ -1,47 +1,47 @@
 /* eslint-disable consistent-return */
 /* eslint-disable no-shadow */
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { RequestCustom } from '../types'; // временное решение
 import card from '../models/card';
-import { ERROR_CODE_DEFAULT, ERROR_CODE_INVALID_DATA, ERROR_CODE_NOT_FOUND } from '../utils/constants';
+import NotFoundError from '../errors/not-found-err';
+import InvalidDataError from '../errors/invalid-data-err';
 
-export const getCards = (req: Request, res: Response) => card
+export const getCards = (req: Request, res: Response, next: NextFunction) => card
   .find({})
   .then((cards) => res.send({ data: cards }))
-  .catch((err) => res.status(ERROR_CODE_DEFAULT).send({ message: err.message }));
+  .catch((err) => next(err));
 
-export const createCard = (req: RequestCustom, res: Response) => {
+export const createCard = (req: RequestCustom, res: Response, next: NextFunction) => {
   const { name, link } = req.body;
   return card
     .create({ name, link, owner: req.user?._id })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR_CODE_INVALID_DATA).send({ message: 'Переданы некорректные данные при создании карточки' });
+        next(new InvalidDataError('Переданы некорректные данные при создании карточки'));
       } else {
-        res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
+        next(err);
       }
     });
 };
 
-export const deleteCard = (req: Request, res: Response) => card
+export const deleteCard = (req: Request, res: Response, next: NextFunction) => card
   .findByIdAndDelete(req.params.cardId)
   .then((card) => {
     if (!card) {
-      res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка не найдена' });
-      return;
+      throw new NotFoundError('Карточка не найдена');
     }
     res.send({ data: card });
   })
   .catch((err) => {
     if (err.name === 'CastError') {
-      res.status(ERROR_CODE_INVALID_DATA).send({ message: '_id карточки невалиден' });
+      next(new InvalidDataError('_id карточки невалиден'));
     } else {
-      res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
+      next(err);
     }
   });
 
-export const likeCard = (req: RequestCustom, res: Response) => card
+export const likeCard = (req: RequestCustom, res: Response, next: NextFunction) => card
   .findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user?._id } }, // добавить _id в массив, если его там нет
@@ -49,20 +49,19 @@ export const likeCard = (req: RequestCustom, res: Response) => card
   )
   .then((card) => {
     if (!card) {
-      res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка не найдена' });
-      return;
+      throw new NotFoundError('Карточка не найдена');
     }
     res.send({ data: card });
   })
   .catch((err) => {
     if (err.name === 'CastError') {
-      res.status(ERROR_CODE_INVALID_DATA).send({ message: '_id карточки невалиден' });
+      next(new InvalidDataError('_id карточки невалиден'));
     } else {
-      res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
+      next();
     }
   });
 
-export const dislikeCard = (req: RequestCustom, res: Response) => card
+export const dislikeCard = (req: RequestCustom, res: Response, next: NextFunction) => card
   .findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user?._id } }, // убрать _id из массива
@@ -70,15 +69,14 @@ export const dislikeCard = (req: RequestCustom, res: Response) => card
   )
   .then((card) => {
     if (!card) {
-      res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка не найдена' });
-      return;
+      throw new NotFoundError('Карточка не найдена');
     }
     res.send({ data: card });
   })
   .catch((err) => {
     if (err.name === 'CastError') {
-      res.status(ERROR_CODE_INVALID_DATA).send({ message: '_id карточки невалиден' });
+      next(new InvalidDataError('_id карточки невалиден'));
     } else {
-      res.status(ERROR_CODE_DEFAULT).send({ message: err.message });
+      next();
     }
   });
