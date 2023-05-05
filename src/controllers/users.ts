@@ -1,6 +1,7 @@
 /* eslint-disable no-shadow */
 /* eslint-disable consistent-return */
 import { NextFunction, Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
 import { RequestCustom } from '../types'; // временное решение
 import user from '../models/user';
 import NotFoundError from '../errors/not-found-err';
@@ -32,9 +33,23 @@ export const getUserById = (req: Request, res: Response, next: NextFunction) => 
 };
 
 export const createUser = (req: Request, res: Response, next: NextFunction) => {
-  const { name, about, avatar } = req.body;
-  return user
-    .create({ name, about, avatar })
+  const
+    {
+      name,
+      about,
+      avatar,
+      email,
+      password,
+    } = req.body;
+  return bcrypt.hash(password, 10)
+    .then((hash) => user
+      .create({
+        name,
+        about,
+        avatar,
+        email,
+        password: hash,
+      }))
     .then((user) => {
       res.send({ data: user });
     })

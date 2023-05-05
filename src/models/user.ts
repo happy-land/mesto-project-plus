@@ -1,9 +1,13 @@
 import mongoose, { Schema } from 'mongoose';
+import validator from 'validator';
+import { defaultUser } from '../utils/constants';
 
 export interface IUser {
   name: string;
   about: string;
   avatar: string;
+  email: string;
+  password: string;
 }
 
 const userSchema = new Schema<IUser>({
@@ -11,15 +15,28 @@ const userSchema = new Schema<IUser>({
     type: String,
     minlength: 2,
     maxlength: 30,
-    required: true,
+    default: defaultUser.name,
   },
   about: {
     type: String,
     minlength: 2,
     maxlength: 30,
-    required: true,
+    default: defaultUser.about,
   },
   avatar: {
+    type: String,
+    default: defaultUser.avatar,
+  },
+  email: {
+    type: String,
+    unique: true,
+    required: true,
+    validate: {
+      validator: (v: string) => validator.isEmail(v),
+      message: 'Неправильный формат почты',
+    },
+  },
+  password: {
     type: String,
     required: true,
   },
