@@ -6,6 +6,7 @@ import { RequestCustom } from '../types'; // временное решение
 import user from '../models/user';
 import NotFoundError from '../errors/not-found-err';
 import InvalidDataError from '../errors/invalid-data-err';
+import UnauthorizedError from '../errors/unauthorized-err';
 
 export const getUsers = (req: Request, res: Response, next: NextFunction) => user
   .find({})
@@ -117,6 +118,29 @@ export const updateAvatar = (req: RequestCustom, res: Response, next: NextFuncti
       if (err.name === 'CastError') {
         next(new InvalidDataError('_id пользователя невалиден'));
       }
+      next(err);
+    });
+};
+
+export const login = (req: RequestCustom, res: Response, next: NextFunction) => {
+  const { email, password } = req.body;
+
+  return user.findOne({ email })
+    .then((user) => {
+      if (!user) {
+        throw new UnauthorizedError('Неправильные почта или пароль');
+      }
+      // res.send({ data: user });
+      return bcrypt.compare(password, user.password);
+    })
+    .then((matched) => {
+      if (!matched) {
+        throw new UnauthorizedError('Неправильные почта или пароль');
+      }
+      // аутентификация успешна
+      res.send({ message: 'Всё верно!' });
+    })
+    .catch((err) => {
       next(err);
     });
 };
