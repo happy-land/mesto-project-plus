@@ -1,5 +1,6 @@
 import express from 'express';
 import mongoose from 'mongoose';
+import { errors } from 'celebrate';
 import usersRouter from './routes/users';
 import cardsRouter from './routes/cards';
 import { ERROR_CODE_NOT_FOUND } from './utils/constants';
@@ -26,6 +27,8 @@ app.use(auth);
 
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
+
+app.use(errors());
 
 app.use(errorLogger);
 
