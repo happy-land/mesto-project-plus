@@ -1,10 +1,11 @@
 /* eslint-disable consistent-return */
 /* eslint-disable no-shadow */
 import { NextFunction, Request, Response } from 'express';
-import { RequestCustom } from '../types'; // временное решение
+import { RequestCustom } from '../types';
 import card from '../models/card';
 import NotFoundError from '../errors/not-found-err';
 import InvalidDataError from '../errors/invalid-data-err';
+import ForbiddenError from '../errors/forbidden-err';
 
 export const getCards = (req: Request, res: Response, next: NextFunction) => card
   .find({})
@@ -25,21 +26,28 @@ export const createCard = (req: RequestCustom, res: Response, next: NextFunction
     });
 };
 
-export const deleteCard = (req: Request, res: Response, next: NextFunction) => card
-  .findByIdAndDelete(req.params.cardId)
-  .then((card) => {
-    if (!card) {
-      throw new NotFoundError('Карточка не найдена');
-    }
-    res.send({ data: card });
-  })
-  .catch((err) => {
-    if (err.name === 'CastError') {
-      next(new InvalidDataError('_id карточки невалиден'));
-    } else {
-      next(err);
-    }
-  });
+export const deleteCard = (req: RequestCustom, res: Response, next: NextFunction) => {
+  const { cardId } = req.params;
+  card.findById(cardId)
+    .then((card) => {
+      if (!card) {
+        throw new NotFoundError('Карточка не найдена');
+      }
+      if (card && card.owner.toString() === req.user?._id.toString()) {
+        card.deleteOne();
+        res.send({ message: 'Карточка успешно удалена' });
+      } else {
+        throw new ForbiddenError('Вы можете удалять только свои карточки');
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new InvalidDataError('_id карточки невалиден'));
+      } else {
+        next(err);
+      }
+    });
+};
 
 export const likeCard = (req: RequestCustom, res: Response, next: NextFunction) => card
   .findByIdAndUpdate(
