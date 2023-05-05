@@ -7,6 +7,7 @@ import { requestLogger, errorLogger } from './middlewares/logger';
 import errorsHandler from './middlewares/errors';
 import { createUser, login } from './controllers/users';
 import auth from './middlewares/auth';
+import { createUserValidator, loginValidator } from './utils/validators';
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -18,8 +19,8 @@ app.use(express.json());
 
 app.use(requestLogger);
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', loginValidator, login);
+app.post('/signup', createUserValidator, createUser);
 
 app.use(auth);
 

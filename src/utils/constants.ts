@@ -12,3 +12,5 @@ export const defaultUser: { name: string, about: string, avatar: string } = {
 };
 
 export const tokenExpireTime: string = '7d';
+
+export const avatarRegexp: RegExp = /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)$/;
