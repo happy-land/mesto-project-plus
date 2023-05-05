@@ -48,6 +48,7 @@ const userSchema = new Schema<IUser, IUserModel>({
   password: {
     type: String,
     required: true,
+    select: false,
   },
 });
 
