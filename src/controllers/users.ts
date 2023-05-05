@@ -1,10 +1,16 @@
 /* eslint-disable no-shadow */
 /* eslint-disable consistent-return */
 import { NextFunction, Request, Response } from 'express';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import bcrypt from 'bcryptjs';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import jwt from 'jsonwebtoken';
 import { RequestCustom } from '../types'; // временное решение
 import user from '../models/user';
 import NotFoundError from '../errors/not-found-err';
 import InvalidDataError from '../errors/invalid-data-err';
+import UnauthorizedError from '../errors/unauthorized-err';
+import { tokenExpireTime } from '../utils/constants';
 
 export const getUsers = (req: Request, res: Response, next: NextFunction) => user
   .find({})
@@ -15,7 +21,6 @@ export const getUserById = (req: Request, res: Response, next: NextFunction) => 
   const { userId } = req.params;
   return user
     .findById(userId)
-    // eslint-disable-next-line no-shadow
     .then((user) => {
       if (!user) {
         throw new NotFoundError('Пользователь по указанному _id не найден.');
@@ -32,9 +37,23 @@ export const getUserById = (req: Request, res: Response, next: NextFunction) => 
 };
 
 export const createUser = (req: Request, res: Response, next: NextFunction) => {
-  const { name, about, avatar } = req.body;
-  return user
-    .create({ name, about, avatar })
+  const
+    {
+      name,
+      about,
+      avatar,
+      email,
+      password,
+    } = req.body;
+  return bcrypt.hash(password, 10)
+    .then((hash) => user
+      .create({
+        name,
+        about,
+        avatar,
+        email,
+        password: hash,
+      }))
     .then((user) => {
       res.send({ data: user });
     })
@@ -102,6 +121,22 @@ export const updateAvatar = (req: RequestCustom, res: Response, next: NextFuncti
       if (err.name === 'CastError') {
         next(new InvalidDataError('_id пользователя невалиден'));
       }
+      next(err);
+    });
+};
+
+export const login = (req: RequestCustom, res: Response, next: NextFunction) => {
+  const { email, password } = req.body;
+
+  return user.findUserByCredentials(email, password)
+    .then((user) => {
+      if (!user) {
+        throw new UnauthorizedError('Неправильные почта или пароль');
+      }
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: tokenExpireTime });
+      res.send({ token });
+    })
+    .catch((err) => {
       next(err);
     });
 };
