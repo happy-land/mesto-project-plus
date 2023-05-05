@@ -11,6 +11,7 @@ import NotFoundError from '../errors/not-found-err';
 import InvalidDataError from '../errors/invalid-data-err';
 import UnauthorizedError from '../errors/unauthorized-err';
 import { tokenExpireTime } from '../utils/constants';
+import ConflictError from '../errors/conflict-err';
 
 export const getUsers = (req: Request, res: Response, next: NextFunction) => user
   .find({})
@@ -58,6 +59,11 @@ export const createUser = (req: Request, res: Response, next: NextFunction) => {
       res.send({ data: user });
     })
     .catch((err) => {
+      if (err.code === 11000) {
+        next(new ConflictError('Пользователь с данным email уже зарегистрирован'));
+      } else {
+        next(err);
+      }
       if (err.name === 'ValidationError') {
         next(new InvalidDataError('Переданы некорректные данные при создании пользователя'));
       } else {
