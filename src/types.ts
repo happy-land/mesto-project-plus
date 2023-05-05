@@ -5,9 +5,3 @@ export interface RequestCustom extends Request {
     _id: string;
   };
 }
-
-export interface IUser {
-  name: string,
-  about: string,
-  avatar: string,
-}

@@ -1,16 +1,25 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable import/no-extraneous-dependencies */
 import mongoose, { Schema } from 'mongoose';
 import validator from 'validator';
+import bcrypt from 'bcryptjs';
 import { defaultUser } from '../utils/constants';
+import UnauthorizedError from '../errors/unauthorized-err';
 
 export interface IUser {
-  name: string;
-  about: string;
-  avatar: string;
+  name?: string;
+  about?: string;
+  avatar?: string;
   email: string;
   password: string;
 }
 
-const userSchema = new Schema<IUser>({
+export interface IUserModel extends mongoose.Model<IUser> {
+  // eslint-disable-next-line max-len
+  findUserByCredentials: (email: string, password: string) => Promise<mongoose.Document<unknown, any, IUser>>
+}
+
+const userSchema = new Schema<IUser, IUserModel>({
   name: {
     type: String,
     minlength: 2,
@@ -42,4 +51,21 @@ const userSchema = new Schema<IUser>({
   },
 });
 
-export default mongoose.model<IUser>('user', userSchema);
+userSchema.static('findUserByCredentials', function findUserByCredentials(email: string, password: string) {
+  return this.findOne({ email }).select('+password')
+    .then((user) => {
+      if (!user) {
+        throw new UnauthorizedError('Неправильные почта или пароль');
+      }
+      return bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            throw new UnauthorizedError('Неправильные почта или пароль');
+          }
+
+          return user;
+        });
+    });
+});
+
+export default mongoose.model<IUser, IUserModel>('user', userSchema);

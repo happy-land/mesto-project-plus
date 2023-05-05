@@ -1,12 +1,16 @@
 /* eslint-disable no-shadow */
 /* eslint-disable consistent-return */
 import { NextFunction, Request, Response } from 'express';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import bcrypt from 'bcryptjs';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import jwt from 'jsonwebtoken';
 import { RequestCustom } from '../types'; // временное решение
 import user from '../models/user';
 import NotFoundError from '../errors/not-found-err';
 import InvalidDataError from '../errors/invalid-data-err';
 import UnauthorizedError from '../errors/unauthorized-err';
+import { tokenExpireTime } from '../utils/constants';
 
 export const getUsers = (req: Request, res: Response, next: NextFunction) => user
   .find({})
@@ -17,7 +21,6 @@ export const getUserById = (req: Request, res: Response, next: NextFunction) => 
   const { userId } = req.params;
   return user
     .findById(userId)
-    // eslint-disable-next-line no-shadow
     .then((user) => {
       if (!user) {
         throw new NotFoundError('Пользователь по указанному _id не найден.');
@@ -125,20 +128,13 @@ export const updateAvatar = (req: RequestCustom, res: Response, next: NextFuncti
 export const login = (req: RequestCustom, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
 
-  return user.findOne({ email })
+  return user.findUserByCredentials(email, password)
     .then((user) => {
       if (!user) {
         throw new UnauthorizedError('Неправильные почта или пароль');
       }
-      // res.send({ data: user });
-      return bcrypt.compare(password, user.password);
-    })
-    .then((matched) => {
-      if (!matched) {
-        throw new UnauthorizedError('Неправильные почта или пароль');
-      }
-      // аутентификация успешна
-      res.send({ message: 'Всё верно!' });
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: tokenExpireTime });
+      res.send({ token });
     })
     .catch((err) => {
       next(err);
