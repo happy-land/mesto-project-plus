@@ -5,7 +5,7 @@ import { NextFunction, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import jwt from 'jsonwebtoken';
-import { RequestCustom } from '../types'; // временное решение
+import { RequestCustom } from '../types';
 import user from '../models/user';
 import NotFoundError from '../errors/not-found-err';
 import InvalidDataError from '../errors/invalid-data-err';
