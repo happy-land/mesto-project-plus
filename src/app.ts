@@ -6,6 +6,7 @@ import { RequestCustom } from './types';
 import { ERROR_CODE_NOT_FOUND } from './utils/constants';
 import errorsHandler from './middlewares/errors';
 import { createUser, login } from './controllers/users';
+import auth from './middlewares/auth';
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -26,6 +27,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 app.post('/signin', login);
 app.post('/signup', createUser);
+
+app.use(auth);
 
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
