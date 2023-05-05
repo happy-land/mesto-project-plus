@@ -140,3 +140,18 @@ export const login = (req: RequestCustom, res: Response, next: NextFunction) => 
       next(err);
     });
 };
+
+export const getUser = (req: RequestCustom, res: Response, next: NextFunction) => user
+  .findById(req.user?._id)
+  .then((user) => {
+    if (!user) {
+      throw new NotFoundError('Пользователь по указанному _id не найден.');
+    }
+    res.send({ data: user });
+  })
+  .catch((err) => {
+    if (err.name === 'CastError') {
+      next(new InvalidDataError('_id пользователя невалиден???'));
+    }
+    next(err);
+  });
