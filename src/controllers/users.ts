@@ -120,11 +120,11 @@ export const updateAvatar = (req: RequestCustom, res: Response, next: NextFuncti
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError) {
         next(new InvalidDataError('Переданы некорректные данные при обновлении пользователя'));
-      }
-      if (err instanceof mongoose.Error.CastError) {
+      } else if (err instanceof mongoose.Error.CastError) {
         next(new InvalidDataError('_id пользователя невалиден'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 

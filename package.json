@@ -2,7 +2,7 @@
   "name": "mesto-project-plus",
   "version": "1.0.0",
   "description": "",
-  "main": "app.ts",
+  "main": "src/app.ts",
   "scripts": {
     "build": "tsc --build",
     "start": "ts-node src/app.ts",
