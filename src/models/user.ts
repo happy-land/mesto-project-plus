@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-/* eslint-disable import/no-extraneous-dependencies */
 import mongoose, { Schema } from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
@@ -7,9 +6,9 @@ import { defaultUser } from '../utils/constants';
 import UnauthorizedError from '../errors/unauthorized-err';
 
 export interface IUser {
-  name?: string;
-  about?: string;
-  avatar?: string;
+  name: string;
+  about: string;
+  avatar: string;
   email: string;
   password: string;
 }
@@ -35,6 +34,10 @@ const userSchema = new Schema<IUser, IUserModel>({
   avatar: {
     type: String,
     default: defaultUser.avatar,
+    validate: {
+      validator: (v: string) => validator.isURL(v),
+      message: 'Неправильный формат ссылки на аватар',
+    },
   },
   email: {
     type: String,
