@@ -1,14 +1,13 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import { errors } from 'celebrate';
-import usersRouter from './routes/users';
-import cardsRouter from './routes/cards';
-import { ERROR_CODE_NOT_FOUND } from './utils/constants';
+import router from './routes';
 import { requestLogger, errorLogger } from './middlewares/logger';
 import errorsHandler from './middlewares/errors';
 import { createUser, login } from './controllers/users';
 import auth from './middlewares/auth';
 import { createUserValidator, loginValidator } from './utils/validators';
+import NotFoundError from './errors/not-found-err';
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -25,15 +24,14 @@ app.post('/signup', createUserValidator, createUser);
 
 app.use(auth);
 
-app.use('/users', usersRouter);
-app.use('/cards', cardsRouter);
+app.use(router);
 
 app.use(errors());
 
 app.use(errorLogger);
 
-app.use((_, res) => {
-  res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Страница не найдена' });
+app.use((_, res, next) => {
+  next(new NotFoundError('Страница не найдена'));
 });
 
 app.use(errorsHandler);
